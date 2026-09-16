@@ -21,7 +21,8 @@
 
 ### Шаг 2: Статический IP
 
-Имя интерфейса: `ip link` (часто `eth0`). Пример `/etc/network/interfaces`:
+Отредактируйте конфигурацию сетевых интерфейсов:
+`nano /etc/network/interfaces`:
 
 ```text
 auto eth0
@@ -30,14 +31,15 @@ iface eth0 inet static
     netmask 255.255.255.0
     gateway 172.16.20.254
 ```
+Для редактирования используйте текстовый редактор nano (рекомендуется)или vim (для опытных пользователей).Оба требуют установки `apk add nano` или `apk add vim`
 
-Примените: `sudo ifup eth0` или `sudo rc-service networking restart`.
+Перезагрузите интерфейс: `ifdown eth0 && ifup eth0`.
 
 ### Шаг 3: Установка BIND
 
 ```bash
-sudo apk update
-sudo apk add bind bind-tools
+apk update
+apk add bind bind-tools
 ```
 
 ### Шаг 4: Конфигурация зон
@@ -45,7 +47,7 @@ sudo apk add bind bind-tools
 В Alpine зоны подключают через `/etc/bind/named.conf`. Удобнее вынести их в отдельный файл.
 
 ```bash
-sudo nano /etc/bind/named.conf.zones
+nano /etc/bind/named.conf.zones
 ```
 
 ```text

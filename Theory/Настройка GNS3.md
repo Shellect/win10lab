@@ -13,7 +13,7 @@
 
 **2. Скачивание и импорт GNS3 VM**
 *   Скачайте архив `GNS3 VM.ova` с [официальной страницы загрузки GNS3](https://gns3.com/software/download-vm) .
-*   В VMware Workstation выберите `Open a Virtual Machine`, укажите путь к скачанному файлу `.ova` и импортируйте его .
+*   В VMware Workstation или Virtualbox выберите `Open a Virtual Machine`, укажите путь к скачанному файлу `.ova` и импортируйте его .
 *   **Важно:** Для работы с VMware на Windows не забудьте также установить VMware Tools на импортированную VM.
 
 **3. Настройка в GNS3**
