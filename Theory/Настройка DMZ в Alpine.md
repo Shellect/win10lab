@@ -101,7 +101,6 @@ zone "20.16.172.in-addr.arpa" {
 Прямая зона:
 
 ```bash
-sudo cp /etc/bind/db.empty /etc/bind/db.lab.local 2>/dev/null || sudo touch /etc/bind/db.lab.local
 sudo nano /etc/bind/db.lab.local
 ```
 
@@ -141,19 +140,19 @@ $TTL    604800
 Права:
 
 ```bash
-sudo chown named:named /etc/bind/db.lab.local /etc/bind/db.172.16.20
-sudo chmod 644 /etc/bind/db.lab.local /etc/bind/db.172.16.20
+chown named:named /etc/bind/db.lab.local /etc/bind/db.172.16.20
+chmod 644 /etc/bind/db.lab.local /etc/bind/db.172.16.20
 ```
 
 ### Шаг 6: Проверка и запуск (OpenRC)
 
 ```bash
-sudo named-checkconf
-sudo named-checkzone lab.local /etc/bind/db.lab.local
-sudo named-checkzone 20.16.172.in-addr.arpa /etc/bind/db.172.16.20
-sudo rc-service named restart
-sudo rc-service named status
-sudo rc-update add named default
+named-checkconf
+named-checkzone lab.local /etc/bind/db.lab.local
+named-checkzone 20.16.172.in-addr.arpa /etc/bind/db.172.16.20
+rc-service named restart
+rc-service named status
+rc-update add named default
 ```
 
 На сервере:
@@ -163,13 +162,6 @@ dig ns1.lab.local @127.0.0.1
 dig www.lab.local @127.0.0.1
 dig -x 172.16.20.53 @127.0.0.1
 ```
-
-С другой машины:
-
-```bash
-dig ns1.lab.local @172.16.20.53
-```
-
 ### Замечания
 
 * IP `172.16.20.53` должен совпадать с адресом Alpine в DMZ.
