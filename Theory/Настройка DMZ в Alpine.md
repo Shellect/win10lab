@@ -44,7 +44,41 @@ apk add bind bind-tools
 
 ### Шаг 4: Конфигурация зон
 
-В Alpine зоны подключают через `/etc/bind/named.conf`. Удобнее вынести их в отдельный файл.
+Создайте файл основной конфигурации `/etc/bind/named.conf`
+```bash
+cp /etc/bind/named.conf.authoritative named.conf
+```
+Отредактируйте `/etc/bind/named.conf`:
+```
+options {
+    directory "/var/bind";
+
+    // Слушаем на всех интерфейсах (важно для GNS3)
+    listen-on { any; };
+    listen-on-v6 { none; };
+
+    // Разрешаем запросы от клиентов blue.net и localhost
+    allow-query { localhost; 172.16.10.0/24; 172.16.20.0/24; };
+    
+    // Разрешаем рекурсию (для кэширования внешних запросов)
+    recursion yes;
+
+    // Отключаем DNSSEC-валидацию для простоты в лабораторной среде
+    dnssec-validation no;
+
+    // Форвардеры (если нужно разрешать внешние имена через шлюз MikroTik)
+    // Если MikroTik не настроен как DNS, укажите публичные (например, 8.8.8.8)
+    forwarders {
+        172.16.20.254;
+    };
+};
+
+// Подключаем локальные зоны
+include "/etc/bind/named.conf.zones";
+```
+
+Отредактируйте файл с настройками зон:
+Здесь мы объявляем зону прямого просмотра (lab.local) и обратную зону (20.16.172.in-addr.arpa)
 
 ```bash
 nano /etc/bind/named.conf.zones
@@ -59,22 +93,6 @@ zone "lab.local" {
 zone "20.16.172.in-addr.arpa" {
     type master;
     file "/etc/bind/db.172.16.20";
-};
-```
-
-В конце `/etc/bind/named.conf`:
-
-```text
-include "/etc/bind/named.conf.zones";
-```
-
-В секции `options`:
-
-```text
-options {
-    listen-on { any; };
-    allow-query { 172.16.10.0/24; 172.16.20.0/24; 127.0.0.1; };
-    allow-recursion { 172.16.10.0/24; 127.0.0.1; };
 };
 ```
 
