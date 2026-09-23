@@ -24,7 +24,7 @@
 * MikroTik на **сетевом уровне (L3)** пересылает пакеты между подсетями.
 * DNS — сервис **прикладного уровня**: имя ↔ IP. Без него удобно работать только с адресами вроде `172.16.20.53`.
 
-### Шаг 1: Настройка рабочих станцимй
+### Шаг 1: Настройка рабочих станций
 
 Скачайте любой дистрибутив Linux, например alpine. Создайте в Virtualbox новую виртуальную машину. 
 В качестве образа выставьте скачанный .iso файл. После загрузки системы с оптического диска запустите команду setup-alpine.
@@ -51,21 +51,28 @@
 ### Шаг 3: Настройка DMZ — red.net (Alpine + BIND9)
 
 Выполните инструкцию: **[Настройка DMZ в Alpine](../Theory/Настройка%20DMZ%20в%20Alpine.md)**  
-(VM, статический IP `172.16.20.53`, BIND, зона `lab.local`, запуск через OpenRC).
-
-После выполнения на Alpine должны проходить локальные проверки `dig` / `nslookup`.
 
 ### Шаг 4: Настройка MikroTik
 
-Если уже сделано в первой лабораторной — пропустите. Иначе:
+**Создайте DHPC диапазон адресов для клиентов:**
 
-```text
-/ip address add address=172.16.10.254/24 interface=ether1
-/ip address add address=172.16.20.254/24 interface=ether2
-/ip address print
+```bash
+/ip pool add name=blue-pool ranges=172.16.10.10-172.16.10.200
 ```
 
-`ether1` — шлюз для PC1 **blue.net**, `ether2` — для PC2 **blue.net**
+**Создайте DHCP сервер**
+
+```bash
+/ip dhcp-server add interface=ether1 address-pool=blue-pool disabled=no lease-time=10m
+```
+
+Укажите тот же интерфейс, что и в GNS3 редакторе (например ether1 или ether0)
+
+**Настройте DHCP подсеть (blue.net)**
+
+```bash
+/ip dhcp-server network add address=172.16.10.0/24 gateway=172.16.10.254 dns-server=172.16.20.53 comment=blue-net
+```
 
 MikroTik по умолчанию не пересылает DNS-запросы между своими интерфейсами. Нужно разрешить ему обрабатывать удалённые запросы:
 
@@ -91,19 +98,6 @@ add name=lab.local type=FWD forward-to=lab-dns match-subdomain=yes
 
 
 ### Шаг 5: Настройка клиентов - blue.net (Alpine) **PC1** и **PC2**
-
-**Настройка IP-адреса**
-
-Отредактируйте файл `/etc/network/interfaces`, добавив блок для вашего интерфейса 
-
-```text
-auto eth0
-iface eth0 inet static
-    address 172.16.10.1/24
-    gateway 172.16.10.254
-```
-
-для PC1. Для PC2 укажите адрес `address 172.16.10.2/24`
 
 **Настройка DNS**
 
