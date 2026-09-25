@@ -31,6 +31,7 @@
 В wizard установки выберите язык us, все остальные параметры по умолчанию. На этапе выбора диска, вводим sda, раздел sys, соглашаемся на очистку диска и установку. В завершении появится надпись completly installed.
 
 ### Шаг 2: Сборка топологии в GNS3
+![Topology](Topology.png)
 
 ```text
 [Alpine PC]  → Switch1 → ether1 (MikroTik) — blue.net (CLient Zone)
@@ -154,13 +155,14 @@ ip route show
 
 **Проверка DNS (red.net) с клиента (blue.net)**
 
-Установка утилит: В Alpine dig не входит в базовую поставку. Установите его из пакета bind-tools
+Установка утилит: В Alpine dig не входит в базовую поставку. Установите его из пакета bind-tools. При установке в виртуальную машину убедитесь, что тип подключения выбран "Сетевой мост", вместо "Унивесальный драйвер".
 
 ```bash
 apk add bind-tools
 ```
 
 ```bash
+ping -c 3 ns1.lab.local
 # Прямой запрос (A-запись)
 dig ns1.lab.local @172.16.20.53
 dig www.lab.local @172.16.20.53
@@ -168,12 +170,11 @@ dig www.lab.local @172.16.20.53
 dig -x 172.16.20.53 @172.16.20.53
 ```
 
-
 ### Шаг 6: Firewall на MikroTik (blue.net ↔ red.net)
 
 Идея DMZ: из **blue.net** к DNS в **red.net** — порт 53; из **red.net** в **blue.net** инициация соединений запрещена.
 
-Выполните полностью инструкцию: **[Настройка Firewall](../Theory/Настройка%20Firewall.md)**  
+Выполните полностью инструкцию: **[Настройка Firewall](./SecondLabTasks/Setup_Firewall.md)**  
 (цепочки filter, правила `forward`, проверка `nslookup` / счётчики).
 
 Краткий минимум (если инструкцию уже освоили):
