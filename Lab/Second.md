@@ -102,7 +102,7 @@ add name=lab.local type=FWD forward-to=lab-dns match-subdomain=yes
 
 ### Шаг 4: Настройка DMZ — red.net (Alpine + BIND9)
 
-Выполните инструкцию: **[Настройка DMZ в Alpine](../Theory/Настройка%20DMZ%20в%20Alpine.md)**  
+Выполните инструкцию: **[Настройка DMZ в Alpine](../Theory/Setup_DNS.md)**  
 
 ### Шаг 5: Настройка клиентов - blue.net (Alpine) **PC1** и **PC2**
 
