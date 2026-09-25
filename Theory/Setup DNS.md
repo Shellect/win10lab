@@ -19,26 +19,9 @@
 4. Добавьте VM в GNS3: `Edit` → `Preferences` → `VirtualBox VMs` → `New`.
 5. Подключите узел к коммутатору **red.net** (DMZ) в топологии лабораторной.
 
-### Шаг 2: Статический IP
+### Шаг 2: Проверка IP
 
-Отредактируйте конфигурацию сетевых интерфейсов:
-`nano /etc/network/interfaces`:
-
-```text
-auto lo
-iface lo inet loopback
-
-auto eth0
-iface eth0 inet static
-    address 172.16.20.53
-    netmask 255.255.255.0
-    gateway 172.16.20.254
-```
-Для редактирования используйте текстовый редактор nano (рекомендуется)или vim (для опытных пользователей).Оба требуют установки `apk add nano` или `apk add vim`
-
-Перезагрузите интерфейс: `ifdown eth0 && ifup eth0`.
-
-Проверьте, что адрес применился:
+Проверьте, IP адрес. Mikrotik должен выдать адрес `172.16.20.53`
 
 ```bash
 ip addr show eth0
