@@ -1,6 +1,6 @@
 # Вторая лабораторная работа
 
-Эта работа продолжает [Первую лабораторную работу](Первая%20лабораторная%20работа.md): тот же MikroTik связывает две подсети. Во второй подсети появляется DNS-сервер на **Alpine Linux**, а клиенты обращаются к нему по доменному имени.
+Эта работа продолжает [Первую лабораторную работу](./First.md): тот же MikroTik связывает две подсети. Во второй подсети появляется DNS-сервер на **Alpine Linux**, а клиенты обращаются к нему по доменному имени.
 
 **Цель:** после настройки DNS в DMZ проверить разрешение имён из клиентской сети.
 
@@ -33,16 +33,15 @@
 ### Шаг 2: Сборка топологии в GNS3
 
 ```text
-[PC_Alpine-1, PC_Alpine-2]  → Switch1 → ether1 (MikroTik) — blue.net (клиенты)
-[Alpine DNS]                → Switch2 → ether2 (MikroTik) — red.net  (DMZ)
+[Alpine PC]  → Switch1 → ether1 (MikroTik) — blue.net (CLient Zone)
+[Alpine DNS] → Switch2 → ether2 (MikroTik) — red.net  (DMZ)
 ```
 * **План адресации** (те же подсети, что в первой лабораторной):
 
 | Сеть | Подсеть | Устройство | IP-адрес |
 | :--- | :--- | :--- | :--- |
 | **blue.net** | `172.16.10.0/24` | MikroTik `ether1` | `172.16.10.254` |
-| | | PC1 | `172.16.10.1` |
-| | | PC2 | `172.16.10.2` |
+| | | PC | `172.16.10.1` |
 | **red.net** | `172.16.20.0/24` | MikroTik `ether2` | `172.16.20.254` |
 | | | Alpine DNS | `172.16.20.53` |
 
@@ -50,15 +49,37 @@
 
 ### Шаг 3: Настройка MikroTik
 
+Так как blue.net подключён к ether1, а red.net — к ether2:
+
+```routeros
+/ip address
+add address=172.16.10.254/24 interface=ether1 comment=blue-net
+add address=172.16.20.254/24 interface=ether2 comment=red-net
+```
+
+**Проверить:**
+
+```routeros
+/ip address print
+```
+
+**Ожидаемо:**
+
+```text
+# ADDRESS           NETWORK        INTERFACE
+0 172.16.10.254/24  172.16.10.0    ether1
+1 172.16.20.254/24  172.16.20.0    ether2
+```
+
 **Создайте DHPC диапазон адресов для клиентов:**
 
-```bash
+```routeros
 /ip pool add name=blue-pool ranges=172.16.10.10-172.16.10.200
 ```
 
 **Создайте DHCP сервер**
 
-```bash
+```routeros
 /ip dhcp-server add interface=ether1 address-pool=blue-pool disabled=no lease-time=10m
 ```
 
@@ -66,21 +87,20 @@
 
 **Настройте DHCP подсеть (blue.net)**
 
-```bash
+```routeros
 /ip dhcp-server network add address=172.16.10.0/24 gateway=172.16.10.254 dns-server=172.16.20.53 comment=blue-net
 ```
 
 **Проверьте настройку**
-```bash
-/ip address print
+```routeros
+/ip dhcp-server print
+/ip dhcp-server network print
+/ip pool print
 ```
-
-Если интерфесы перепутались, можно исправить:
-
 
 MikroTik по умолчанию не пересылает DNS-запросы между своими интерфейсами. Нужно разрешить ему обрабатывать удалённые запросы:
 
-```bash
+```routeros
 /ip dns set allow-remote-requests=yes
 ```
 
@@ -90,19 +110,31 @@ MikroTik по умолчанию не пересылает DNS-запросы м
 
 Теперь нужно сказать MikroTik, чтобы он перенаправлял запросы именно к lab.local на ваш BIND-сервер, а не пытался разрешить их сам.
 
-```bash
-/ip dns forwarders
-add name=lab-dns dns-servers=172.16.20.53
+```routeros
+/ip dns forwarders add name=lab-dns dns-servers=172.16.20.53
 
-/ip dns static
-add name=lab.local type=FWD forward-to=lab-dns match-subdomain=yes
+/ip dns static add name=lab.local type=FWD forward-to=lab-dns match-subdomain=yes
 ```
+
+**Пояснения:**
+
+- type=FWD — запись типа forward.
+- forward-to=172.16.20.53 — указываем прямой IP BIND, а не имя forwarder'а (надёжнее).
+- match-subdomain=yes — запросы к ns1.lab.local, www.lab.local тоже уйдут на BIND, а не только сам lab.local.
 
 Параметр `match-subdomain=yes` важен: он заставляет MikroTik перенаправлять не только запросы к `lab.local`, но и ко всем поддоменам вроде `ns1.lab.local` или `www.lab.local`
 
+**Проверка**
+
+```routeros
+/ip dns print
+/ip dns static print detail
+/ip dns forwarders print
+```
+
 ### Шаг 4: Настройка DMZ — red.net (Alpine + BIND9)
 
-Выполните инструкцию: **[Настройка DMZ в Alpine](../Theory/Setup_DNS.md)**  
+Выполните инструкцию: **[Настройка DMZ в Alpine](./SecondLabTasks/Setup_DNS.md)**  
 
 ### Шаг 5: Настройка клиентов - blue.net (Alpine) **PC1** и **PC2**
 
