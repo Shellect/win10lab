@@ -48,7 +48,11 @@
 
 Запустите узлы из GNS3. Имеет смысл подписать зоны на схеме (синий / красный) и указать CIDR подсетей.
 
-### Шаг 3: Настройка MikroTik
+### Шаг 3: Настройка DMZ — red.net (Alpine + BIND9)
+
+Выполните инструкцию: **[Настройка DMZ в Alpine](./SecondLabTasks/Setup_DNS.md)**  
+
+### Шаг 4: Настройка MikroTik
 
 Так как blue.net подключён к ether1, а red.net — к ether2:
 
@@ -83,8 +87,6 @@ add address=172.16.20.254/24 interface=ether2 comment=red-net
 ```routeros
 /ip dhcp-server add interface=ether1 address-pool=blue-pool disabled=no lease-time=10m
 ```
-
-Укажите тот же интерфейс, что и в GNS3 редакторе (например ether1 или ether0)
 
 **Настройте DHCP подсеть (blue.net)**
 
@@ -132,10 +134,6 @@ MikroTik по умолчанию не пересылает DNS-запросы м
 /ip dns static print detail
 /ip dns forwarders print
 ```
-
-### Шаг 4: Настройка DMZ — red.net (Alpine + BIND9)
-
-Выполните инструкцию: **[Настройка DMZ в Alpine](./SecondLabTasks/Setup_DNS.md)**  
 
 ### Шаг 5: Настройка клиентов - blue.net (Alpine) **PC1** и **PC2**
 
